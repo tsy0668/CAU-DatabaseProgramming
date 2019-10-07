@@ -1,0 +1,48 @@
+#include <stdio.h>
+#include <sqlca.h>
+#include <stdlib.h>
+
+EXEC SQL BEGIN DECLARE SECTION;
+char userinfo[12] = "scott/tiger";
+char emp_name[10];
+int emp_number;
+int dept_number;
+EXEC SQL END DECLARE SECTION;
+
+char temp[32];
+
+/* include the SQL Communication Area */
+#include <sqlca.h>
+
+main()
+{
+	/*DB CONNECT*/
+	EXEC SQL CONNECT :userinfo;
+	printf ("DB connected\n");
+
+	/* declare cursor */
+	EXEC SQL DECLARE emp_cursor CURSOR FOR
+	SELECT ename FROM emp
+	WHERE deptno = :dept_number;
+
+printf ("Department number?");
+gets(temp);
+dept_number = atoi(temp);
+/*open the cursor and identify the active set */
+EXEC SQL OPEN emp_cursor;
+
+printf ("Employee Name\n");
+printf ("--------------------\n");
+
+/* fetch and process data in a loop exit when no more data */
+EXEC SQL WHENEVER NOT FOUND DO break;
+while(1)
+{
+	EXEC SQL FETCH emp_cursor INTO :emp_name;
+	printf("%s\n", emp_name);
+}
+EXEC SQL CLOSE emp_cursor;
+EXEC SQL COMMIT WORK RELEASE;
+system("pause");
+}
+
